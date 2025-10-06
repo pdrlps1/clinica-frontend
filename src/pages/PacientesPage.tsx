@@ -3,6 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Search, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 import type { Paciente, PacienteRequest } from "../api/pacientes";
 import {
     listarPacientes,
@@ -109,150 +114,210 @@ export default function PacientesPage() {
     }, [items, fNome, fEmail]);
 
     return (
-        <div className="mx-auto max-w-6xl p-6 grid gap-6">
-            <h1 className="text-2xl font-bold">Pacientes</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Pacientes</h2>
+                    <p className="text-muted-foreground">
+                        Gerencie os pacientes da clínica
+                    </p>
+                </div>
+                <Button onClick={carregar} disabled={loading} variant="outline">
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Atualizar
+                </Button>
+            </div>
 
             {/* Form criar/editar */}
-            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-3 border rounded p-4">
-                <div className="flex items-center justify-between">
-                    <div className="font-semibold">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Plus className="h-5 w-5" />
                         {editingId ? `Editar paciente #${editingId}` : "Novo paciente"}
-                    </div>
-                    {editingId && (
-                        <button
-                            type="button"
-                            onClick={cancelarEdicao}
-                            className="text-sm underline"
-                        >
-                            Cancelar edição
-                        </button>
-                    )}
-                </div>
+                    </CardTitle>
+                    <CardDescription>
+                        {editingId ? "Atualize as informações do paciente" : "Cadastre um novo paciente no sistema"}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="nome">Nome *</Label>
+                                <Input
+                                    id="nome"
+                                    {...register("nome")}
+                                    placeholder="Nome completo"
+                                />
+                                {errors.nome && (
+                                    <p className="text-sm text-destructive">{errors.nome.message}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">E-mail *</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register("email")}
+                                    placeholder="email@exemplo.com"
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                                )}
+                            </div>
+                        </div>
 
-                <div className="grid gap-1">
-                    <label>Nome</label>
-                    <input className="border rounded px-3 py-2" {...register("nome")} />
-                    {errors.nome && <span className="text-red-600 text-sm">{errors.nome.message}</span>}
-                </div>
-                <div className="grid gap-1">
-                    <label>E-mail</label>
-                    <input className="border rounded px-3 py-2" {...register("email")} />
-                    {errors.email && <span className="text-red-600 text-sm">{errors.email.message}</span>}
-                </div>
-                <div className="grid gap-1">
-                    <label>Telefone</label>
-                    <input className="border rounded px-3 py-2" {...register("telefone")} />
-                </div>
-                <div className="grid gap-1">
-                    <label>Data de nascimento</label>
-                    <input type="date" className="border rounded px-3 py-2" {...register("dataNascimento")} />
-                </div>
-                <div className="grid gap-1">
-                    <label>Endereço</label>
-                    <input className="border rounded px-3 py-2" {...register("endereco")} />
-                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="telefone">Telefone</Label>
+                                <Input
+                                    id="telefone"
+                                    {...register("telefone")}
+                                    placeholder="(11) 99999-9999"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="dataNascimento">Data de nascimento</Label>
+                                <Input
+                                    id="dataNascimento"
+                                    type="date"
+                                    {...register("dataNascimento")}
+                                />
+                            </div>
+                        </div>
 
-                <div className="flex gap-3 pt-1">
-                    <button
-                        disabled={isSubmitting}
-                        className="bg-black text-white rounded px-4 py-2 disabled:opacity-60"
-                    >
-                        {editingId ? (isSubmitting ? "Atualizando..." : "Atualizar") : (isSubmitting ? "Salvando..." : "Salvar")}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => reset()}
-                        className="border rounded px-4 py-2"
-                    >
-                        Limpar
-                    </button>
-                </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="endereco">Endereço</Label>
+                            <Input
+                                id="endereco"
+                                {...register("endereco")}
+                                placeholder="Endereço completo"
+                            />
+                        </div>
 
-                {erro && <div className="text-red-700">{erro}</div>}
-            </form>
+                        <div className="flex gap-2">
+                            <Button type="submit" disabled={isSubmitting}>
+                                {editingId ? (isSubmitting ? "Atualizando..." : "Atualizar") : (isSubmitting ? "Salvando..." : "Salvar")}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => reset()}>
+                                Limpar
+                            </Button>
+                            {editingId && (
+                                <Button type="button" variant="ghost" onClick={cancelarEdicao}>
+                                    Cancelar edição
+                                </Button>
+                            )}
+                        </div>
+
+                        {erro && (
+                            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                                {erro}
+                            </div>
+                        )}
+                    </form>
+                </CardContent>
+            </Card>
 
             {/* Filtros */}
-            <div className="border rounded p-4 grid gap-3">
-                <div className="font-semibold">Filtros</div>
-                <div className="grid md:grid-cols-2 gap-3">
-                    <div className="grid gap-1">
-                        <label>Nome contém</label>
-                        <input
-                            className="border rounded px-3 py-2"
-                            value={fNome}
-                            onChange={(e) => setFNome(e.target.value)}
-                            placeholder="Ex.: Ana"
-                        />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Search className="h-5 w-5" />
+                        Filtros
+                    </CardTitle>
+                    <CardDescription>
+                        Filtre os pacientes por nome ou e-mail
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="filtro-nome">Nome contém</Label>
+                            <Input
+                                id="filtro-nome"
+                                value={fNome}
+                                onChange={(e) => setFNome(e.target.value)}
+                                placeholder="Ex.: Ana"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="filtro-email">E-mail contém</Label>
+                            <Input
+                                id="filtro-email"
+                                value={fEmail}
+                                onChange={(e) => setFEmail(e.target.value)}
+                                placeholder="Ex.: @example.com"
+                            />
+                        </div>
                     </div>
-                    <div className="grid gap-1">
-                        <label>E-mail contém</label>
-                        <input
-                            className="border rounded px-3 py-2"
-                            value={fEmail}
-                            onChange={(e) => setFEmail(e.target.value)}
-                            placeholder="Ex.: @example.com"
-                        />
-                    </div>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
 
             {/* Tabela */}
-            <div className="border rounded">
-                <div className="px-4 py-3 font-semibold border-b flex items-center justify-between">
-                    <span>Lista</span>
-                    <button
-                        className="text-sm underline"
-                        onClick={carregar}
-                        disabled={loading}
-                    >
-                        {loading ? "Atualizando..." : "Atualizar"}
-                    </button>
-                </div>
-
-                {loading ? (
-                    <div className="p-4">Carregando...</div>
-                ) : filtrados.length === 0 ? (
-                    <div className="p-4">Nenhum paciente encontrado.</div>
-                ) : (
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="[&>*]:px-4 [&>*]:py-2 border-b">
-                                <th>Nome</th>
-                                <th>E-mail</th>
-                                <th>Telefone</th>
-                                <th>Nascimento</th>
-                                <th>Endereço</th>
-                                <th style={{ width: 140 }}>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtrados.map((p) => (
-                                <tr key={p.id} className="[&>*]:px-4 [&>*]:py-2 border-b">
-                                    <td>{p.nome}</td>
-                                    <td>{p.email}</td>
-                                    <td>{p.telefone || "-"}</td>
-                                    <td>{p.dataNascimento || "-"}</td>
-                                    <td>{p.endereco || "-"}</td>
-                                    <td className="flex gap-2">
-                                        <button
-                                            onClick={() => startEditar(p)}
-                                            className="border rounded px-2 py-1 text-sm"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            onClick={() => onDelete(p.id)}
-                                            className="border rounded px-2 py-1 text-sm"
-                                        >
-                                            Excluir
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Lista de Pacientes</CardTitle>
+                    <CardDescription>
+                        {filtrados.length} paciente(s) encontrado(s)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="text-muted-foreground">Carregando...</div>
+                        </div>
+                    ) : filtrados.length === 0 ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="text-muted-foreground">Nenhum paciente encontrado.</div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b">
+                                        <th className="text-left p-4 font-medium">Nome</th>
+                                        <th className="text-left p-4 font-medium">E-mail</th>
+                                        <th className="text-left p-4 font-medium">Telefone</th>
+                                        <th className="text-left p-4 font-medium">Nascimento</th>
+                                        <th className="text-left p-4 font-medium">Endereço</th>
+                                        <th className="text-left p-4 font-medium w-32">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtrados.map((p) => (
+                                        <tr key={p.id} className="border-b hover:bg-muted/50">
+                                            <td className="p-4 font-medium">{p.nome}</td>
+                                            <td className="p-4 text-muted-foreground">{p.email}</td>
+                                            <td className="p-4 text-muted-foreground">{p.telefone || "-"}</td>
+                                            <td className="p-4 text-muted-foreground">{p.dataNascimento || "-"}</td>
+                                            <td className="p-4 text-muted-foreground">{p.endereco || "-"}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => startEditar(p)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() => onDelete(p.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

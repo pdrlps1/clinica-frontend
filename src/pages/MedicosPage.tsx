@@ -3,6 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Search, Plus, Edit, Trash2, RefreshCw, Stethoscope } from "lucide-react";
 import type { Medico, MedicoRequest } from "../api/medicos";
 import { listarMedicos, criarMedico, atualizarMedico, deletarMedico } from "../api/medicos";
 import ConfirmButton from "../components/ConfirmButton";
@@ -94,112 +99,223 @@ export default function MedicosPage() {
     }, [items, fNome, fEmail, fCRM]);
 
     return (
-        <div className="mx-auto max-w-6xl p-6 grid gap-6">
-            <h1 className="text-2xl font-bold">Médicos</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Médicos</h2>
+                    <p className="text-muted-foreground">
+                        Gerencie os médicos da clínica
+                    </p>
+                </div>
+                <Button onClick={carregar} disabled={loading} variant="outline">
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Atualizar
+                </Button>
+            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="grid gap-3 border rounded p-4">
-                <div className="flex items-center justify-between">
-                    <div className="font-semibold">{editingId ? `Editar médico #${editingId}` : "Novo médico"}</div>
-                    {editingId && (
-                        <button type="button" onClick={cancelarEdicao} className="text-sm underline">Cancelar edição</button>
+            {/* Form criar/editar */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Stethoscope className="h-5 w-5" />
+                        {editingId ? `Editar médico #${editingId}` : "Novo médico"}
+                    </CardTitle>
+                    <CardDescription>
+                        {editingId ? "Atualize as informações do médico" : "Cadastre um novo médico no sistema"}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="nome">Nome *</Label>
+                                <Input
+                                    id="nome"
+                                    {...register("nome")}
+                                    placeholder="Nome completo"
+                                />
+                                {errors.nome && (
+                                    <p className="text-sm text-destructive">{errors.nome.message}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">E-mail *</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register("email")}
+                                    placeholder="email@exemplo.com"
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="crm">CRM *</Label>
+                                <Input
+                                    id="crm"
+                                    {...register("crm")}
+                                    placeholder="123456"
+                                />
+                                {errors.crm && (
+                                    <p className="text-sm text-destructive">{errors.crm.message}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="especialidade">Especialidade</Label>
+                                <Input
+                                    id="especialidade"
+                                    {...register("especialidade")}
+                                    placeholder="Ex.: Cardiologia"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="telefone">Telefone</Label>
+                            <Input
+                                id="telefone"
+                                {...register("telefone")}
+                                placeholder="(11) 99999-9999"
+                            />
+                        </div>
+
+                        <div className="flex gap-2">
+                            <Button type="submit" disabled={isSubmitting}>
+                                {editingId ? (isSubmitting ? "Atualizando..." : "Atualizar") : (isSubmitting ? "Salvando..." : "Salvar")}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => reset()}>
+                                Limpar
+                            </Button>
+                            {editingId && (
+                                <Button type="button" variant="ghost" onClick={cancelarEdicao}>
+                                    Cancelar edição
+                                </Button>
+                            )}
+                        </div>
+
+                        {erro && (
+                            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                                {erro}
+                            </div>
+                        )}
+                    </form>
+                </CardContent>
+            </Card>
+
+            {/* Filtros */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Search className="h-5 w-5" />
+                        Filtros
+                    </CardTitle>
+                    <CardDescription>
+                        Filtre os médicos por nome, e-mail ou CRM
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="filtro-nome">Nome</Label>
+                            <Input
+                                id="filtro-nome"
+                                value={fNome}
+                                onChange={(e) => setFNome(e.target.value)}
+                                placeholder="Ex.: Dr. João"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="filtro-email">E-mail</Label>
+                            <Input
+                                id="filtro-email"
+                                value={fEmail}
+                                onChange={(e) => setFEmail(e.target.value)}
+                                placeholder="Ex.: @exemplo.com"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="filtro-crm">CRM</Label>
+                            <Input
+                                id="filtro-crm"
+                                value={fCRM}
+                                onChange={(e) => setFCRM(e.target.value)}
+                                placeholder="Ex.: 123456"
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Tabela */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Lista de Médicos</CardTitle>
+                    <CardDescription>
+                        {filtrados.length} médico(s) encontrado(s)
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="text-muted-foreground">Carregando...</div>
+                        </div>
+                    ) : filtrados.length === 0 ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="text-muted-foreground">Nenhum médico encontrado.</div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b">
+                                        <th className="text-left p-4 font-medium">Nome</th>
+                                        <th className="text-left p-4 font-medium">E-mail</th>
+                                        <th className="text-left p-4 font-medium">CRM</th>
+                                        <th className="text-left p-4 font-medium">Especialidade</th>
+                                        <th className="text-left p-4 font-medium">Telefone</th>
+                                        <th className="text-left p-4 font-medium w-32">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtrados.map((m) => (
+                                        <tr key={m.id} className="border-b hover:bg-muted/50">
+                                            <td className="p-4 font-medium">{m.nome}</td>
+                                            <td className="p-4 text-muted-foreground">{m.email}</td>
+                                            <td className="p-4 text-muted-foreground">{m.crm}</td>
+                                            <td className="p-4 text-muted-foreground">{m.especialidade || "-"}</td>
+                                            <td className="p-4 text-muted-foreground">{m.telefone || "-"}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => startEditar(m)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <ConfirmButton
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        message="Confirma excluir este médico?"
+                                                        onConfirm={() => onDelete(m.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </ConfirmButton>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
-                </div>
-
-                <div className="grid gap-1">
-                    <label>Nome</label>
-                    <input className="border rounded px-3 py-2" {...register("nome")} />
-                    {errors.nome && <span className="text-red-600 text-sm">{errors.nome.message}</span>}
-                </div>
-                <div className="grid gap-1">
-                    <label>E-mail</label>
-                    <input className="border rounded px-3 py-2" {...register("email")} />
-                    {errors.email && <span className="text-red-600 text-sm">{errors.email.message}</span>}
-                </div>
-                <div className="grid gap-1">
-                    <label>CRM</label>
-                    <input className="border rounded px-3 py-2" {...register("crm")} />
-                    {errors.crm && <span className="text-red-600 text-sm">{errors.crm.message}</span>}
-                </div>
-                <div className="grid gap-1">
-                    <label>Especialidade</label>
-                    <input className="border rounded px-3 py-2" {...register("especialidade")} />
-                </div>
-                <div className="grid gap-1">
-                    <label>Telefone</label>
-                    <input className="border rounded px-3 py-2" {...register("telefone")} />
-                </div>
-
-                <div className="flex gap-3 pt-1">
-                    <button disabled={isSubmitting} className="bg-black text-white rounded px-4 py-2 disabled:opacity-60">
-                        {editingId ? (isSubmitting ? "Atualizando..." : "Atualizar") : (isSubmitting ? "Salvando..." : "Salvar")}
-                    </button>
-                    <button type="button" onClick={() => reset()} className="border rounded px-4 py-2">Limpar</button>
-                </div>
-
-                {erro && <div className="text-red-700">{erro}</div>}
-            </form>
-
-            <div className="border rounded p-4 grid gap-3">
-                <div className="font-semibold">Filtros</div>
-                <div className="grid md:grid-cols-3 gap-3">
-                    <div className="grid gap-1">
-                        <label>Nome</label>
-                        <input className="border rounded px-3 py-2" value={fNome} onChange={(e) => setFNome(e.target.value)} />
-                    </div>
-                    <div className="grid gap-1">
-                        <label>E-mail</label>
-                        <input className="border rounded px-3 py-2" value={fEmail} onChange={(e) => setFEmail(e.target.value)} />
-                    </div>
-                    <div className="grid gap-1">
-                        <label>CRM</label>
-                        <input className="border rounded px-3 py-2" value={fCRM} onChange={(e) => setFCRM(e.target.value)} />
-                    </div>
-                </div>
-            </div>
-
-            <div className="border rounded">
-                <div className="px-4 py-3 font-semibold border-b flex items-center justify-between">
-                    <span>Lista</span>
-                    <button className="text-sm underline" onClick={carregar} disabled={loading}>
-                        {loading ? "Atualizando..." : "Atualizar"}
-                    </button>
-                </div>
-                {loading ? (
-                    <div className="p-4">Carregando...</div>
-                ) : filtrados.length === 0 ? (
-                    <div className="p-4">Nenhum médico encontrado.</div>
-                ) : (
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="[&>*]:px-4 [&>*]:py-2 border-b">
-                                <th>Nome</th>
-                                <th>E-mail</th>
-                                <th>CRM</th>
-                                <th>Especialidade</th>
-                                <th>Telefone</th>
-                                <th style={{ width: 140 }}>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtrados.map((m) => (
-                                <tr key={m.id} className="[&>*]:px-4 [&>*]:py-2 border-b">
-                                    <td>{m.nome}</td>
-                                    <td>{m.email}</td>
-                                    <td>{m.crm}</td>
-                                    <td>{m.especialidade || "-"}</td>
-                                    <td>{m.telefone || "-"}</td>
-                                    <td className="flex gap-2">
-                                        <button onClick={() => startEditar(m)} className="border rounded px-2 py-1 text-sm">Editar</button>
-                                        <ConfirmButton className="border rounded px-2 py-1 text-sm" message="Confirma excluir este médico?" onConfirm={() => onDelete(m.id)}>
-                                            Excluir
-                                        </ConfirmButton>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
