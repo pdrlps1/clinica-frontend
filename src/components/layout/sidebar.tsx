@@ -1,4 +1,4 @@
-import { useState } from "react"
+// import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             )}
         >
             {/* Header */}
-            <div className="flex h-16 items-center justify-between px-4 border-b">
+            <div className="flex h-16 items-center justify-between px-4">
                 {!collapsed && (
                     <h1 className="text-lg font-semibold text-foreground">
                         Clínica Médica

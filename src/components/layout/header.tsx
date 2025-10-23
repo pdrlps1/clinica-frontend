@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, User, LogOut } from "lucide-react"
-import { useState } from "react"
+// import { useState } from "react"
 
 interface HeaderProps {
     title: string
@@ -8,12 +8,12 @@ interface HeaderProps {
     isDark: boolean
 }
 
-export function Header({ title, onThemeToggle, isDark }: HeaderProps) {
+export function Header({ onThemeToggle, isDark }: HeaderProps) {
     return (
-        <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-            <div>
+        <header className="flex h-16 items-center justify-end bg-background px-6">
+            {/* <div>
                 <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-            </div>
+            </div> */}
 
             <div className="flex items-center gap-4">
                 {/* Theme Toggle */}
